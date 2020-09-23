@@ -1,0 +1,37 @@
+// 15:05/20/9/2020
+// Current version is broken due to scaling of the sprite with
+// screen size as it somehow messed with hitbox detection more 
+// than it should have in my mind.
+// When I draw the hitboxes they do not colide yet it acts like 
+// they do. I am not sure why this is happening however I need
+// to take a break from this for a while
+
+// 9:15/21/9/2020
+// The collision still does not line up.
+// I have no idea why however I found a number that works. 
+// I plan to move on today and maybe add sounds
+// Moved this over from the code so it has it own document and
+// is not taking up space as a giant comment.
+
+// 11:15/21/9/2020
+// My issue with collision was caused by rectMode and imageMode.
+// Currently collision works as intended and there are no issues 
+// that I see I plan on adding Background music tomorrow. I have
+// a few Ideas for what to add but have not deciced and I have
+// no clue how to do it yet. I have also added a death screen.
+
+// 9:25/22/2020
+// I am going to wait on music for now as I havent found a good
+// song for the background. Going to use the background 
+// selection/stitching for extra for experts probably. I was
+// tempted to add enemies today but I will wait as I will
+// probably learn a good way to do it soon rather than just
+// hacking it togeather poorly
+
+// 10:20/22//2020
+// Handed in interactive scene. My current idea for this game is
+// have a set amount of enemies per area and gain power(damage,
+// defense, hp) for every enemy killed. After a set amount of 
+// areas/stages there will be a boss fight. this fight is always
+// accesable but will be near impossible if you go there with no
+// power ups.
