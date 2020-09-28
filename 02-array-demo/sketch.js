@@ -1,11 +1,13 @@
 // Array Demo
 
-let numberOfRects = 100;
+let numberOfRects;
 let rectWidth;
 let rectHeight = [];
+let time = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  numberOfRects = width;
   rectWidth = width / numberOfRects;
   setTheHeights();
 }
@@ -17,7 +19,7 @@ function draw() {
 
 function setTheHeights() {
   for (let i = 0; i < numberOfRects; i++) {
-    rectHeight.push(random(1, height));
+    rectHeight.push(noise(millis()) * height);
   }
 }
 
