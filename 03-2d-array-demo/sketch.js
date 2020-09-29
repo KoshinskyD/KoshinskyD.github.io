@@ -1,22 +1,22 @@
 // 2d array demo
-let tempName;
+let grid1;
 let gridSize = 100;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  tempName = createGrid(gridSize);
+  grid1 = createGrid(gridSize);
 }
 
 function draw() {
   clear();
   background(220);
-  displayGrid(tempName);
-  tempName = createGrid(gridSize);
+  displayGrid(grid1);
+  grid1 = createGrid(gridSize);
 }
 
 function keyPressed() {
   if(keyCode === 32) {
-    tempName = createGrid(gridSize);
+    grid1 = createGrid(gridSize);
   }
 }
 
