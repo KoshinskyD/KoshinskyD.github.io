@@ -49,3 +49,16 @@ function countEven(nums) {
   return x;
 }
 */
+
+/*
+function makeMiddle(nums){
+  return [nums[nums.length/2 - 1], nums[nums.length/2]];
+}
+*/
+
+/*
+function midThree(nums){
+  return [nums[Math.floor(nums.length/2)-1], nums[Math.floor(nums.length/2)], nums[Math.floor(nums.length/2)+1]];
+}
+*/
+
