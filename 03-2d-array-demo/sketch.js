@@ -1,22 +1,26 @@
 // 2d array demo
-let grid1;
-let gridSize = 100;
+let grid;
+let gridSize = 10;
+let squareHeight;
+let squareWidth;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  grid1 = createGrid(gridSize);
+  grid = createGrid(gridSize);
+  squareHeight = height / grid[0].length;
+  squareWidth = width / grid[0].length;
 }
 
 function draw() {
   clear();
   background(220);
-  displayGrid(grid1);
-  grid1 = createGrid(gridSize);
+  displayGrid(grid);
+  // grid = createGrid(gridSize);
 }
 
 function keyPressed() {
   if(keyCode === 32) {
-    grid1 = createGrid(gridSize);
+    grid = createGrid(gridSize);
   }
 }
 
@@ -26,45 +30,31 @@ function createGrid(gridSize) {
   for(let i = 0; i < gridSize; i++) {
     grid.push([]);
     for (let j = 0; j < gridSize; j++) {
-      let randomizer = random(1, 8);
-      if(randomizer <= 1){
-        grid[i].push("red");
-      }
-      else if (randomizer <= 2) {
-        grid[i].push("purple");
-      }
-      else if (randomizer <= 3) {
-        grid[i].push("magenta");
-      }
-      else if (randomizer <= 4) {
-        grid[i].push("black");
-      }
-      else if (randomizer <= 5) {
-        grid[i].push("purple");
-      }
-      else if (randomizer <= 6) {
-        grid[i].push("orange");
-      }
-      else if (randomizer <= 7) {
-        grid[i].push("orange");
-      }
-      else{
-        grid[i].push("blue");
-      }
+      grid[i].push(255);
     }
   }
-  console.log(grid);
   return grid;
 }
 
 function displayGrid(grid) {
-  let squareHeight = height / grid[0].length;
-  let squareWidth = width / grid[0].length;
-
   for(let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[y].length; x++) {
       fill(grid[y][x]);
       rect(x*squareWidth, y*squareHeight, squareWidth, squareHeight);
+    }
+  }
+}
+
+function mousePressed() {
+  let squareX = Math.floor(mouseX / squareWidth);
+  let squareY = Math.floor(mouseY / squareHeight);
+
+  if (grid[squareY][squareX] === 0) {
+    grid[squareY][squareX] = 255;
+  }
+  else{
+    if (grid[squareY][squareX] === 255) {
+      grid[squareY][squareX] = 0;
     }
   }
 }
