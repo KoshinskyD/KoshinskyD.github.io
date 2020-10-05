@@ -50,10 +50,19 @@
 // Creating a player class. Mostly working but I am getting
 // errors with displaying my sprite.
 
-// 11:42?2/10/2020
+// 11:42/2/10/2020
 // Fixed errors with displaying char sprite and got enemies
 // working mostly. Hitboxes are not that good but they work as a
 // proof of concept and it is fun just trying to dodge them. I
 // plan to add attacks for the player tonight or tomorrow and
 // then an inventory for the player. I will use this inventory
 // for my 2d array project.
+
+// 10:22/5/10/2020
+// Started work on inventory.
+
+// 11:43/5/10/2020
+// Mostly finished sidebar. Need to work on inventory position.
+// Currently the inventory array is filled with random values to
+// make it so i can display it.
+// Using numbers based on a sidebar of 300 width.
