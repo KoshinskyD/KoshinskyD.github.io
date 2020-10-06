@@ -1,5 +1,5 @@
 // spritess
-let sprites;
+let sprites = [];
 let knightLeft1, knightRight1, knightLeft2, knightRight2, knightStill;
 
 // Background managment.
@@ -13,17 +13,85 @@ let state = "play";
 let areaCounter = 1;
 
 // Inventory
-let sideBarScale = 5+1/3;
 // first is equiped second and third are your inventory
-let inventory = [[1, 3, 4], [1, 3, 4], [1, 3, 4]];
+let inventory = [["Wooden Sword", " ", " "], [" ", " ", " "], [" ", " ", " "]];
+
+// sideBar and inventory
+let sideBar;
+class PlayerMenu {
+  constructor(sprites) {
+    this.sideBarScaler = height/789;
+    this.sideBarWidth = width/ (5+1/3);
+    this.sprite = sprites[0];
+    this.spriteY = height/6;
+    this.incentoryCellSize = this.sideBarWidth/6;
+  }
+
+  display() {
+    push();
+    // Grey Sidebar
+    fill("grey");
+    rect(width-this.sideBarWidth, 0, this.sideBarWidth, height);
+
+    // Area Counter
+    fill("black");
+    textAlign(CENTER);
+    textSize(25 * this.sideBarScaler);
+    text("Area: " + areaCounter, width - this.sideBarWidth /2, 50 * this.sideBarScaler);
+  
+    // Character display.
+    rectMode(CENTER);
+    fill(180);
+    rect(width - this.sideBarWidth/2, this.spriteY, 135* this.sideBarScaler, 135* this.sideBarScaler, 10);
+    image(this.sprite, width - this.sideBarWidth/2, this.spriteY, 100 * this.sideBarScaler, 100 * this.sideBarScaler);
+    pop();
+
+  }
+  healthBar() {
+    // Health
+    rectMode(CORNER);
+    fill(180);
+    rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, 200 * this.sideBarScaler, 20 * this.sideBarScaler);
+    if(character.health > 66) {
+      fill("green");
+    }
+    else if (character.health > 33) {
+      fill("orange");
+    }
+    else {
+      fill("red");
+    }
+
+    if (character.health < 0 && state === "play") {
+      state = "dead";
+    }
+    // eslint-disable-next-line no-extra-parens
+    rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, (character.health * (200 * this.sideBarScaler) ) /100, 20 * this.sideBarScaler);
+  }
+
+  // Inventory
+  displayInventory() {
+    push();
+    rectMode(CENTER);
+    for(let y = 0; y < inventory.length; y++) {
+      for(let x = 1; x < inventory[y].length+1; x++) {
+        fill("black");
+        rect(width - this.sideBarWidth*0.9 + (this.incentoryCellSize + this.incentoryCellSize/5) * x, height/2.5 + (this.incentoryCellSize + this.incentoryCellSize/5) * y, this.incentoryCellSize, this.incentoryCellSize, 15);
+      }
+
+    }
+    pop();
+  }
+}
 
 // Player managment
 let character;
 class Player {
-  constructor(sprites) {
+  constructor(sprites, inventory) {
     this.health = 100;
-    this.playerDamage = 100;
+    this.playerDamage = 50;
     this.monsterKills = 0;
+    this.equiped = inventory[0];
     
     
     //sprite managment
@@ -76,7 +144,7 @@ class Player {
 
   // Checks if sprite should be moving and then moves the sprite
   handleMovement() {
-    if (this.isMovingLeft) {
+    if (this.isMovingLeft && this.x > - height/this.spriteScale) {
       this.x -= this.movementSpeed;
     }
     if (this.isMovingRight) {
@@ -95,7 +163,7 @@ class Player {
   // Applies gravity and checks if you are on the ground
   applyGravity() {
     // Ground Detection
-    this.isGrounded = collideLineRect(0 - 30, height * 0.63, width + 30, height * 0.63, this.x, this.y, height/this.hitboxScale, height/this.hitboxScale);
+    this.isGrounded = collideLineRect(0 - 50, height * 0.63, width + 30, height * 0.63, this.x, this.y, height/this.hitboxScale, height/this.hitboxScale);
     
     if (!this.isGrounded && !this.isJumping) {
       this.y += this.gravity;
@@ -106,7 +174,7 @@ class Player {
   nextScreen() {
     let direction;
     // right side of the screen
-    if (this.x > width-width/sideBarScale + 20) { // 20 is a buffer so it isnt instant and player can run off screeen
+    if (this.x > width - sideBar.sideBarWidth + 20) { // 20 is a buffer so it isnt instant and player can run off screeen
       this.x = 0;
       selectBackgrounds();
       areaCounter++;
@@ -115,11 +183,19 @@ class Player {
     } 
     // left side of the screen
     else if (this.x < 0 - 25) {
-      this.x = width-width/sideBarScale;
-      selectBackgrounds();  
-      areaCounter++;
-      direction = "right";
-      spawnEnemies(direction);
+      this.health --;
+
+    }
+  }
+
+  attack() {
+    ellipse(this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 1.5 * height/this.hitboxScale);
+    for (let i = 0; i < enemies.length; i++) {
+      if (collideRectCircle(enemies[i].x), enemies[i].y, enemies[i].spriteSize, // enemy location
+      this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 1.5 * height/this.hitboxScale) { // attack hitbox
+        enemies[i].health -= this.playerDamage;
+        console.log("hit");
+      }
     }
   }
 }
@@ -128,19 +204,20 @@ class Player {
 let enemies = [];
 class Enemy {
   constructor(area, enemyType, x, direction) {
-    this.enemyHealth = 100 * area;
-    this.enemyDamage = 10;
+    this.health = 100 * area;
+    this.enemyDamage = 10 + areaCounter * 2;
     this.x = x;
     this.scale = 15; // bigger number is a smaller enemy
     this.spriteSize = height/this.scale;
     this.y = height*0.63 - this.spriteSize; // on the ground
     this.direction = direction;
     this.speed = 2 * area;
+    this.colour = "blue";
   }
   // Displays enemy
   display() {
     push();
-    fill("blue");
+    fill(this.colour);
     rect(this.x, this.y, this.spriteSize, this.spriteSize);
     pop();
   }
@@ -153,11 +230,11 @@ class Enemy {
       this.direction = "right";
     }
     
-    if (this.x < width-width/sideBarScale - this.spriteSize && this.direction === "right"){
+    if (this.x < width - sideBar.sideBarWidth - this.spriteSize && this.direction === "right"){
       this.x+= this.speed;
-    }
+    } 
     
-    else if (this.x >= width-width/sideBarScale - this.spriteSize && this.direction === "right") {
+    else if (this.x >= width - sideBar.sideBarWidth - this.spriteSize && this.direction === "right") {
       this.direction = "left";
     }
     
@@ -166,6 +243,11 @@ class Enemy {
   checkCollision(character) {
     if (this.x <= character.x + 5 && this.x >= character.x - 5 && this.y <= character.y + height/character.hitboxScale) {
       character.health -= this.enemyDamage;
+    }
+  }
+  isAlive() {
+    if (this.health <= 0) {
+      this.colour = "red";
     }
   }
 }
@@ -189,7 +271,12 @@ function preload() {
 
 // Setup function runs once at the start of the program
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  if (windowHeight*2 > windowWidth) {
+    createCanvas(windowWidth, windowWidth/2);
+  }
+  else{
+    createCanvas(windowHeight*2 , windowHeight);
+  }
   imageMode(CENTER);
   rectMode(CORNER);
   frameRate(30);
@@ -198,7 +285,8 @@ function setup() {
   selectBackgrounds();
   backgroundColour = 0;
   sprites = [knightStill, knightLeft1, knightLeft2, knightRight1, knightRight2];
-  character = new Player(sprites);
+  character = new Player(sprites, inventory);
+  sideBar = new PlayerMenu(sprites);
   character.x = width / 2;
   character.y = height / 2;
 }
@@ -217,17 +305,16 @@ function draw() {
     // line(0 - 10, height * 0.63, width + 10, height * 0.63);
     
     // Draws and moves sprite.
+    character.attack();
     character.displaySprite();
     character.handleMovement();
     character.applyGravity();
     character.nextScreen();
+    
 
-    displaySideBar();
+    handleSidebar();
 
     handleEnemies();
-    if (character.health < 0) {
-      state = "dead";
-    }
   }
   else if (state === "dead") {
     deathScreen();
@@ -318,50 +405,9 @@ function spawnEnemies(direction) {
   }
 }
 
-// Draws the sidebar and fills it with data
-function displaySideBar() {
-  push();
-  // Grey Sidebar
-  fill("grey");
-  rect(width-width/sideBarScale, 0, width/sideBarScale, height);
-  // Area Counter
-  fill("black");
-  textAlign(CENTER);
-  textSize(width/64);
-  text("Area: " + areaCounter, width - width/sideBarScale /2, height/15.75);
-
-  // Character display.
-  rectMode(CENTER);
-  fill(180);
-  rect(width - width/sideBarScale /2, height/6.312, height/6.5, height/6.5, 10);
-  image(knightStill, width - width/sideBarScale /2, height/6.312, height/10, height/10);
-
-  // Health
-  rectMode(CORNER);
-  rect(width - width/sideBarScale + width/32, height/ 3, width/8, 20);
-  if(character.health > 66) {
-    fill("green");
-  }
-  else if (character.health > 33) {
-    fill("orange");
-  }
-  else {
-    fill("red");
-  }
-  // eslint-disable-next-line no-extra-parens
-  rect(width - width/sideBarScale + width/32, height/ 3, (character.health * (width/8) ) /100, 20);
-  
-  // Inventory
-  displayInventory();
-  pop();
-}
-
-function displayInventory() {
-  rectMode(CENTER);
-  for(let y = 0; y < inventory.length; y++) {
-    for(let x = 1; x < inventory[y].length+1; x++) {
-      fill("black");
-      rect(width-width/sideBarScale + 60 * x, height/2.8 + 60 * y, 50, 50, 15);
-    }
-  }
+// displays sidbar and info on it
+function handleSidebar(){
+  sideBar.display();
+  sideBar.healthBar();
+  sideBar.displayInventory();
 }

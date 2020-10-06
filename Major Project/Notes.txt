@@ -66,3 +66,18 @@
 // Currently the inventory array is filled with random values to
 // make it so i can display it.
 // Using numbers based on a sidebar of 300 width.
+
+// 10:24/6/10/2020
+// deciced to completly redo the sidebar math and set the
+// screen to a ratio of 2:1 with:height. Hopefully this makes
+// things easier. Game is working properly on a screensize of 
+// 1578 x 789. Remember to comment the sidebar class its a mess.
+
+// 11:15/6/10/2020
+// Got Sidebar to scale based around a height of 789. It isn't
+// pretty but it works. To tired to comment so I will start to
+// add attacking.
+
+// 11:43/6/10/2020
+// Working on deleting enemies if health = 0
+// hit detection is not working at all.
