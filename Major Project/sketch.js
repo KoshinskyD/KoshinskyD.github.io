@@ -1,6 +1,3 @@
-// spritess
-let sprites = [];
-let knightLeft1, knightRight1, knightLeft2, knightRight2, knightStill;
 
 // Background managment.
 let background1, background2, background3, background4, background5, background6, background7, background8;
@@ -12,11 +9,12 @@ let backgroundColour;
 let state = "play";
 let areaCounter = 1;
 
-// Inventory
-// first is equiped second and third are your inventory
-let inventory = [["Wooden Sword", " ", " "], [" ", " ", " "], [" ", " ", " "]];
 
 // sideBar and inventory
+
+// Inventory
+// inventory[0] is what is equiped inventory[1] and inventory[2] are your inventory
+let inventory = [["Wooden Sword", " ", " "], [" ", " ", " "], [" ", " ", " "]];
 let sideBar;
 class PlayerMenu {
   constructor(sprites) {
@@ -24,20 +22,22 @@ class PlayerMenu {
     this.sideBarWidth = width/ (5+1/3);
     this.sprite = sprites[0];
     this.spriteY = height/6;
-    this.incentoryCellSize = this.sideBarWidth/6;
+    this.incentoryCellSize = 50 * this.sideBarScaler;
   }
 
+  // grey sidebar, sprite, text
   display() {
     push();
     // Grey Sidebar
     fill("grey");
     rect(width-this.sideBarWidth, 0, this.sideBarWidth, height);
 
-    // Area Counter
+    // Displaying all text. Area counter, Kill counter
     fill("black");
     textAlign(CENTER);
     textSize(25 * this.sideBarScaler);
     text("Area: " + areaCounter, width - this.sideBarWidth /2, 50 * this.sideBarScaler);
+    text("Kills:" + character.enemyKills, width - this.sideBarWidth / 2, 230 * this.sideBarScaler);
   
     // Character display.
     rectMode(CENTER);
@@ -47,10 +47,13 @@ class PlayerMenu {
     pop();
 
   }
+
+  // health bar
   healthBar() {
     // Health
     rectMode(CORNER);
     fill(180);
+    //outline
     rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, 200 * this.sideBarScaler, 20 * this.sideBarScaler);
     if(character.health > 66) {
       fill("green");
@@ -65,6 +68,7 @@ class PlayerMenu {
     if (character.health < 0 && state === "play") {
       state = "dead";
     }
+    // Health amount
     // eslint-disable-next-line no-extra-parens
     rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, (character.health * (200 * this.sideBarScaler) ) /100, 20 * this.sideBarScaler);
   }
@@ -72,11 +76,25 @@ class PlayerMenu {
   // Inventory
   displayInventory() {
     push();
-    rectMode(CENTER);
-    for(let y = 0; y < inventory.length; y++) {
+    fill("black");
+    rect(width - 240 * this.sideBarScaler, 290 * this.sideBarScaler, 190* this.sideBarScaler, 70 * this.sideBarScaler, 15);
+
+    // hotbar/equiped items
+    fill("white");
+    for(let x = 1; x < inventory[0].length+1; x++) {
+      rect(width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x, 300 * this.sideBarScaler, this.incentoryCellSize, this.incentoryCellSize, 15);
+    }
+    
+    // box surrounding inventory
+    fill("black");
+    rect(width - 240 * this.sideBarScaler, 375 * this.sideBarScaler, 190 * this.sideBarScaler, 130 * this.sideBarScaler, 15);
+
+    // boxes for inventoy slots
+    rectMode(CORNER);
+    for(let y = 1; y < inventory.length; y++) {
       for(let x = 1; x < inventory[y].length+1; x++) {
-        fill("black");
-        rect(width - this.sideBarWidth*0.9 + (this.incentoryCellSize + this.incentoryCellSize/5) * x, height/2.5 + (this.incentoryCellSize + this.incentoryCellSize/5) * y, this.incentoryCellSize, this.incentoryCellSize, 15);
+        fill("white");
+        rect(width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x, 325 *this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * y, this.incentoryCellSize, this.incentoryCellSize, 15);
       }
 
     }
@@ -85,12 +103,15 @@ class PlayerMenu {
 }
 
 // Player managment
+let sprites = [];
+let knightLeft1, knightRight1, knightLeft2, knightRight2, knightStill;
+
 let character;
 class Player {
   constructor(sprites, inventory) {
     this.health = 100;
-    this.playerDamage = 50;
-    this.monsterKills = 0;
+    this.playerDamage = 500;
+    this.enemyKills = 0;
     this.equiped = inventory[0];
     
     
@@ -189,12 +210,16 @@ class Player {
   }
 
   attack() {
-    ellipse(this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 1.5 * height/this.hitboxScale);
-    for (let i = 0; i < enemies.length; i++) {
-      if (collideRectCircle(enemies[i].x), enemies[i].y, enemies[i].spriteSize, // enemy location
-      this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 1.5 * height/this.hitboxScale) { // attack hitbox
-        enemies[i].health -= this.playerDamage;
-        console.log("hit");
+    if(mouseIsPressed) {
+      ellipse(this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale);
+
+      for (let i = 0; i < enemies.length; i++) {
+  
+        if (collideRectCircle(enemies[i].x, enemies[i].y, enemies[i].spriteSize, enemies[i].spriteSize, // enemy location
+          this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale)) { // attack hitbox
+          enemies[i].health -= this.playerDamage;
+          console.log("hit");
+        }
       }
     }
   }
@@ -204,22 +229,50 @@ class Player {
 let enemies = [];
 class Enemy {
   constructor(area, enemyType, x, direction) {
-    this.health = 100 * area;
+    // Health and Damage
+    this.area = area;
+    this.health = 100 * this.area;
+    this.maxHealth = this.health;
     this.enemyDamage = 10 + areaCounter * 2;
-    this.x = x;
+
+    // Size
     this.scale = 15; // bigger number is a smaller enemy
     this.spriteSize = height/this.scale;
-    this.y = height*0.63 - this.spriteSize; // on the ground
+    
+    // location
+    this.y = height*0.63 - this.spriteSize; //Places the enemy on the ground
+    this.x = x;
+
+    // Enemy Movement
     this.direction = direction;
-    this.speed = 2 * area;
+    this.speed = 2 * this.area * 0;
+
     this.colour = "blue";
   }
   // Displays enemy
   display() {
-    push();
+
+    // blue rectangles as enemy placeholders
     fill(this.colour);
     rect(this.x, this.y, this.spriteSize, this.spriteSize);
-    pop();
+
+    // healthbar
+    // outline
+    fill(180);
+    rect(this.x, this.y - 15, this.spriteSize, 10);
+
+    // Health amount
+    if(this.health > 66 * this.area) {
+      fill("green");
+    }
+    else if (this.health > 33 * this.area) {
+      fill("orange");
+    }
+    else {
+      fill("red");
+    }
+    rect(this.x, this.y - 15, this.health * this.spriteSize / this.maxHealth, 10);
+
   }
   // Moves enemy
   move() {
@@ -239,15 +292,19 @@ class Enemy {
     }
     
   }
+
   // Checks if you are coliding with the player
   checkCollision(character) {
     if (this.x <= character.x + 5 && this.x >= character.x - 5 && this.y <= character.y + height/character.hitboxScale) {
       character.health -= this.enemyDamage;
     }
   }
-  isAlive() {
+
+  // Returns true and ups the kill counter if you kill an enemy
+  isDead() {
     if (this.health <= 0) {
-      this.colour = "red";
+      character.enemyKills++;
+      return true;
     }
   }
 }
@@ -305,16 +362,16 @@ function draw() {
     // line(0 - 10, height * 0.63, width + 10, height * 0.63);
     
     // Draws and moves sprite.
-    character.attack();
     character.displaySprite();
     character.handleMovement();
     character.applyGravity();
     character.nextScreen();
-    
+    character.attack();
+
+    handleEnemies();
 
     handleSidebar();
 
-    handleEnemies();
   }
   else if (state === "dead") {
     deathScreen();
@@ -363,10 +420,14 @@ function displayBackground() {
 
 // handles all enemy actions ex.(displaying, moving, attacking, etc.)
 function handleEnemies() {
-  for(let i = 0; i < enemies.length; i++) {
+  for(let i = enemies.length - 1; i >= 0; i--) {
     enemies[i].display();
+    enemies[i].checkCollision(character);
     enemies[i].move();
-    enemies[i].checkCollision(character);    
+    if(enemies[i].isDead()) {
+      enemies.splice(i, 1);
+    }    
+
   }
 }
 

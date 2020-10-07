@@ -81,3 +81,9 @@
 // 11:43/6/10/2020
 // Working on deleting enemies if health = 0
 // hit detection is not working at all.
+
+//11:02/7/10/2020
+// Hit detection is working, I forgot to add a perentheses. I
+// now plan to add weapons and finish the inventory
+// Please comment the code sometime soon its getting hard to 
+// read.
