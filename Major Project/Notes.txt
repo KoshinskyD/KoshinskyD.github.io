@@ -87,3 +87,11 @@
 // now plan to add weapons and finish the inventory
 // Please comment the code sometime soon its getting hard to 
 // read.
+
+// 11:34/8/10/2020
+// I have added Weapons. They do not drop but they do work. My
+// plans for the rest of the day is to redo the attack function
+// and put it into a mouse pressed function. I still need to
+// comment my code but I did make parts of it slightly more
+// readable. Where there are colours in the weapons I plan to 
+// put sprites for each weapon.

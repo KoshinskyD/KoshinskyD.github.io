@@ -9,12 +9,20 @@ let backgroundColour;
 let state = "play";
 let areaCounter = 1;
 
+// Weapons
+let weapons = new Map();
+weapons.set("Stick", [10, "brown"]);
+weapons.set("Wooden Sword", [30, "red"]);
+weapons.set("Sharp Blade", [40, "silver"]);
+weapons.set("Crystal Sword", [100, "blue"]);
+weapons.set("Ancient Stone Sword", [800, "grey"]);
 
 // sideBar and inventory
 
 // Inventory
 // inventory[0] is what is equiped inventory[1] and inventory[2] are your inventory
-let inventory = [["Wooden Sword", " ", " "], [" ", " ", " "], [" ", " ", " "]];
+// inventory[0][0] is weapon, inventory[0][1] is armour, inventory[0][2] is ring 
+let inventory = [["Ancient Stone Sword"," ", ""], [" ", " ", " "], [" ", " ", " "]];
 let sideBar;
 class PlayerMenu {
   constructor(sprites) {
@@ -82,7 +90,9 @@ class PlayerMenu {
     // hotbar/equiped items
     fill("white");
     for(let x = 1; x < inventory[0].length+1; x++) {
-      rect(width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x, 300 * this.sideBarScaler, this.incentoryCellSize, this.incentoryCellSize, 15);
+      let equipedCellX = width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x;
+      let equipedCellY = 300 * this.sideBarScaler;
+      rect(equipedCellX, equipedCellY, this.incentoryCellSize, this.incentoryCellSize, 15);
     }
     
     // box surrounding inventory
@@ -91,12 +101,29 @@ class PlayerMenu {
 
     // boxes for inventoy slots
     rectMode(CORNER);
+    fill("white");
     for(let y = 1; y < inventory.length; y++) {
       for(let x = 1; x < inventory[y].length+1; x++) {
-        fill("white");
-        rect(width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x, 325 *this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * y, this.incentoryCellSize, this.incentoryCellSize, 15);
+
+        let cellX = width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x;
+        let cellY = 325 *this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * y;
+        rect(cellX, cellY, this.incentoryCellSize, this.incentoryCellSize, 15);
       }
 
+    }
+    pop();
+  }
+
+  // Items
+  displayItems(){
+    // weapon
+    push();
+    if (inventory[0][0] !== " ") {
+      let equipedCellX = width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * 1;
+      let equipedCellY = 300 * this.sideBarScaler;
+      fill(weapons.get(inventory[0][0])[1]);
+      rect(equipedCellX, equipedCellY, this.incentoryCellSize, this.incentoryCellSize, 15);
+      
     }
     pop();
   }
@@ -110,7 +137,9 @@ let character;
 class Player {
   constructor(sprites, inventory) {
     this.health = 100;
-    this.playerDamage = 500;
+    this.maxHealth = this.health;
+    this.weapon = weapons.get(inventory[0][0]);
+    this.playerDamage = 1 * this.weapon[0];
     this.enemyKills = 0;
     this.equiped = inventory[0];
     
@@ -210,16 +239,14 @@ class Player {
   }
 
   attack() {
-    if(mouseIsPressed) {
-      ellipse(this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale);
+    ellipse(this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale);
 
-      for (let i = 0; i < enemies.length; i++) {
-  
-        if (collideRectCircle(enemies[i].x, enemies[i].y, enemies[i].spriteSize, enemies[i].spriteSize, // enemy location
-          this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale)) { // attack hitbox
-          enemies[i].health -= this.playerDamage;
-          console.log("hit");
-        }
+    for (let i = 0; i < enemies.length; i++) {
+
+      if (collideRectCircle(enemies[i].x, enemies[i].y, enemies[i].spriteSize, enemies[i].spriteSize, // enemy location
+                            this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale)) { // attack hitbox
+
+        enemies[i].health -= this.playerDamage;
       }
     }
   }
@@ -245,7 +272,7 @@ class Enemy {
 
     // Enemy Movement
     this.direction = direction;
-    this.speed = 2 * this.area * 0;
+    this.speed = 2 * (this.area-2);
 
     this.colour = "blue";
   }
@@ -258,7 +285,8 @@ class Enemy {
 
     // healthbar
     // outline
-    fill(180);
+    // fill(180);
+    noFill();
     rect(this.x, this.y - 15, this.spriteSize, 10);
 
     // Health amount
@@ -304,6 +332,9 @@ class Enemy {
   isDead() {
     if (this.health <= 0) {
       character.enemyKills++;
+      if (character.health < character.maxHealth){
+        character.health += 5;
+      }
       return true;
     }
   }
@@ -346,6 +377,8 @@ function setup() {
   sideBar = new PlayerMenu(sprites);
   character.x = width / 2;
   character.y = height / 2;
+  console.log(character.weapon);
+  console.log(character.playerDamage);
 }
 
 // Set to run 30 times a second
@@ -366,7 +399,7 @@ function draw() {
     character.handleMovement();
     character.applyGravity();
     character.nextScreen();
-    character.attack();
+    
 
     handleEnemies();
 
@@ -458,6 +491,13 @@ function keyReleased() {
   }
 }
 
+// Attacks when mouse is pressed
+function mousePressed() {
+  if (state === "play" && mouseX < width - sideBar.sideBarWidth){
+    character.attack();
+  }
+}
+
 // spawns enemies
 function spawnEnemies(direction) {
   enemies = [];
@@ -471,4 +511,5 @@ function handleSidebar(){
   sideBar.display();
   sideBar.healthBar();
   sideBar.displayInventory();
+  sideBar.displayItems();
 }
