@@ -24,7 +24,7 @@ let weaponsKey = ["Stick", "Wooden Sword", "Sharp Blade", "Crystal Sword", "Anci
 let weaponLevel = 0;
 // inventory[0] is what is equiped inventory[1] and inventory[2] are your inventory
 // inventory[0][0] is weapon, inventory[0][1] is armour, inventory[0][2] is ring 
-let inventory = [[weaponsKey[0]," ", ""], ["Health Potion", "Health Potion", "Health Potion"], ["Damage Potion", "Damage Potion", "Damage Potion"]];
+let inventory = [[weaponsKey[0]," ", ""], ["Health Potion", "Health Potion", "Health Potion"], ["Health Potion", "Health Potion", "Health Potion"]];
 let sideBar;
 class PlayerMenu {
   constructor(sprites) {
@@ -158,7 +158,7 @@ class PlayerMenu {
 
   // moveItems(startLocation, endLocation) {
   // }
-  
+
   // Use Items
   useItem(inventorySlot) {
     let y;
@@ -394,7 +394,7 @@ class Enemy {
 
       if (character.enemyKills % 5 === 1 && weaponLevel < weaponsKey.length-1) {
         weaponLevel++;
-        inventory = [[weaponsKey[weaponLevel]," ", ""], [" ", " ", " "], [" ", " ", " "]];
+        inventory[0].splice(0, 1, weaponsKey[weaponLevel]);
       }
 
       return true;
