@@ -11,18 +11,20 @@ let areaCounter = 1;
 
 // Weapons
 let weapons = new Map();
-weapons.set("Stick", [10, "brown"]);
-weapons.set("Wooden Sword", [30, "red"]);
-weapons.set("Sharp Blade", [40, "silver"]);
-weapons.set("Crystal Sword", [100, "blue"]);
-weapons.set("Ancient Stone Sword", [800, "grey"]);
+weapons.set("Stick", [50, "brown"]);
+weapons.set("Wooden Sword", [150, "red"]);
+weapons.set("Sharp Blade", [180, "silver"]);
+weapons.set("Crystal Sword", [300, "blue"]);
+weapons.set("Ancient Stone Sword", [1200, "grey"]);
+let weaponsKey = ["Stick", "Wooden Sword", "Sharp Blade", "Crystal Sword", "Ancient Stone Sword"];
 
 // sideBar and inventory
 
 // Inventory
+let weaponLevel = 0;
 // inventory[0] is what is equiped inventory[1] and inventory[2] are your inventory
 // inventory[0][0] is weapon, inventory[0][1] is armour, inventory[0][2] is ring 
-let inventory = [["Ancient Stone Sword"," ", ""], [" ", " ", " "], [" ", " ", " "]];
+let inventory = [[weaponsKey[0]," ", ""], ["Health Potion", "Health Potion", "Health Potion"], ["Damage Potion", "Damage Potion", "Damage Potion"]];
 let sideBar;
 class PlayerMenu {
   constructor(sprites) {
@@ -30,7 +32,11 @@ class PlayerMenu {
     this.sideBarWidth = width/ (5+1/3);
     this.sprite = sprites[0];
     this.spriteY = height/6;
-    this.incentoryCellSize = 50 * this.sideBarScaler;
+    this.inventoryCellSize = 50 * this.sideBarScaler;
+    this.cellLocation = [];
+    this.cellX;
+    this.cellY;
+    this.isBeingDragged = false;
   }
 
   // grey sidebar, sprite, text
@@ -90,9 +96,9 @@ class PlayerMenu {
     // hotbar/equiped items
     fill("white");
     for(let x = 1; x < inventory[0].length+1; x++) {
-      let equipedCellX = width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x;
+      let equipedCellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * x;
       let equipedCellY = 300 * this.sideBarScaler;
-      rect(equipedCellX, equipedCellY, this.incentoryCellSize, this.incentoryCellSize, 15);
+      rect(equipedCellX, equipedCellY, this.inventoryCellSize, this.inventoryCellSize, 15);
     }
     
     // box surrounding inventory
@@ -105,34 +111,84 @@ class PlayerMenu {
     for(let y = 1; y < inventory.length; y++) {
       for(let x = 1; x < inventory[y].length+1; x++) {
 
-        let cellX = width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * x;
-        let cellY = 325 *this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * y;
-        rect(cellX, cellY, this.incentoryCellSize, this.incentoryCellSize, 15);
+        let cellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * x;
+        let cellY = 325 *this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * y;
+        rect(cellX, cellY, this.inventoryCellSize, this.inventoryCellSize, 15);
+
+        if (this.cellLocation.length < 6) {
+          this.cellLocation.push([cellX, cellY]);
+        }
       }
 
     }
     pop();
+    // console.log(this.cellLocation);
   }
 
   // Items
   displayItems(){
-    // weapon
+    // weapon 
     push();
     if (inventory[0][0] !== " ") {
-      let equipedCellX = width - 290*this.sideBarScaler + (this.incentoryCellSize + this.incentoryCellSize/5) * 1;
+      let equipedCellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * 1;
       let equipedCellY = 300 * this.sideBarScaler;
       fill(weapons.get(inventory[0][0])[1]);
-      rect(equipedCellX, equipedCellY, this.incentoryCellSize, this.incentoryCellSize, 15);
-      
+      rect(equipedCellX, equipedCellY, this.inventoryCellSize, this.inventoryCellSize, 15);
     }
+
+    // inventory slots 1-6
+    let cellCounter = 0;
+    for (let y = 1; y < inventory.length; y++) {
+      for (let x = 0; x < inventory[y].length; x++) {
+        if (inventory[y][x] === "Health Potion" && !this.isBeingDragged) {
+          fill(255, 0, 0);
+          ellipse(this.cellLocation[cellCounter][0] + this.inventoryCellSize/2, this.cellLocation[cellCounter][1] + this.inventoryCellSize/2, 20);
+        }
+        if (inventory[y][x] === "Damage Potion" && !this.isBeingDragged) {
+          fill(0, 255, 0);
+          ellipse(this.cellLocation[cellCounter][0] + this.inventoryCellSize/2, this.cellLocation[cellCounter][1] + this.inventoryCellSize/2, 20);
+        }
+        cellCounter++;
+      }
+    }
+
+    // Moving items
     pop();
   }
+
+  // moveItems(startLocation, endLocation) {
+  // }
+  
+  // Use Items
+  useItem(inventorySlot) {
+    let y;
+    if (inventorySlot > 2) {
+      y = 2;
+    }
+    else {
+      y = 1;
+    }
+    if (inventory[y][inventorySlot % 3] === "Health Potion") {
+      if (character.maxHealth - character.health >= 50) {
+        character.health += 50;
+      }
+      else{
+        character.health = character.maxHealth;
+      }
+      inventory[y][inventorySlot % 3] = " ";
+    }
+
+    if (inventory[y][inventorySlot % 3] === "Damage Potion") {
+      character.health -= 50;
+      inventory[y][inventorySlot % 3] = " ";
+    }
+  }
+  
 }
 
 // Player managment
 let sprites = [];
 let knightLeft1, knightRight1, knightLeft2, knightRight2, knightStill;
-
 let character;
 class Player {
   constructor(sprites, inventory) {
@@ -141,7 +197,7 @@ class Player {
     this.weapon = weapons.get(inventory[0][0]);
     this.playerDamage = 1 * this.weapon[0];
     this.enemyKills = 0;
-    this.equiped = inventory[0];
+    this.equipedWeapon = inventory[0];
     
     
     //sprite managment
@@ -335,6 +391,12 @@ class Enemy {
       if (character.health < character.maxHealth){
         character.health += 5;
       }
+
+      if (character.enemyKills % 5 === 1 && weaponLevel < weaponsKey.length-1) {
+        weaponLevel++;
+        inventory = [[weaponsKey[weaponLevel]," ", ""], [" ", " ", " "], [" ", " ", " "]];
+      }
+
       return true;
     }
   }
@@ -495,6 +557,17 @@ function keyReleased() {
 function mousePressed() {
   if (state === "play" && mouseX < width - sideBar.sideBarWidth){
     character.attack();
+  }
+}
+
+function doubleClicked() {
+  for (let i = 0; i < sideBar.cellLocation.length; i++) {
+    if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
+      mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
+      console.log(i);
+      console.log(inventory);
+      sideBar.useItem(i);
+    }
   }
 }
 
