@@ -9,6 +9,8 @@ let backgroundColour;
 let state = "play";
 let areaCounter = 1;
 
+// Inventory
+// ITMES
 // Weapons
 let weapons = new Map();
 weapons.set("Stick", [50, "brown"]);
@@ -17,15 +19,25 @@ weapons.set("Sharp Blade", [180, "silver"]);
 weapons.set("Crystal Sword", [300, "blue"]);
 weapons.set("Ancient Stone Sword", [1200, "grey"]);
 let weaponsKey = ["Stick", "Wooden Sword", "Sharp Blade", "Crystal Sword", "Ancient Stone Sword"];
-
-// sideBar and inventory
-
-// Inventory
 let weaponLevel = 0;
+// Potions
+let healthPotionSprite;
+let healthPotion = {
+  hp: 50,
+ 
+};
+
+class Items {
+  constructor() {
+    sprite;
+    isBeingDragged = false;
+  }
+}
+
 // inventory[0] is what is equiped inventory[1] and inventory[2] are your inventory
 // inventory[0][0] is weapon, inventory[0][1] is armour, inventory[0][2] is ring 
-let inventory = [[weaponsKey[0]," ", ""], ["Health Potion", "Health Potion", "Health Potion"], ["Health Potion", "Health Potion", "Health Potion"]];
-let sideBar;
+let inventory = [[weaponsKey[0], "armour", "ring"], [healthPotion, healthPotion, healthPotion], [healthPotion, healthPotion, healthPotion]];
+let sideBar; 
 class PlayerMenu {
   constructor(sprites) {
     this.sideBarScaler = height/789;
@@ -36,10 +48,9 @@ class PlayerMenu {
     this.cellLocation = [];
     this.cellX;
     this.cellY;
-    this.isBeingDragged = false;
   }
 
-  // grey sidebar, sprite, text
+  // Grey sidebar, sprite, text
   display() {
     push();
     // Grey Sidebar
@@ -140,9 +151,9 @@ class PlayerMenu {
     let cellCounter = 0;
     for (let y = 1; y < inventory.length; y++) {
       for (let x = 0; x < inventory[y].length; x++) {
-        if (inventory[y][x] === "Health Potion" && !this.isBeingDragged) {
+        if (inventory[y][x] === healthPotion && !healthPotion.isBeingDragged) {
           fill(255, 0, 0);
-          ellipse(this.cellLocation[cellCounter][0] + this.inventoryCellSize/2, this.cellLocation[cellCounter][1] + this.inventoryCellSize/2, 20);
+          image(healthPotion.healthPotionSprite, this.cellLocation[cellCounter][0] + this.inventoryCellSize/2, this.cellLocation[cellCounter][1] + this.inventoryCellSize/2, 30, 30)
         }
         if (inventory[y][x] === "Damage Potion" && !this.isBeingDragged) {
           fill(0, 255, 0);
@@ -168,9 +179,9 @@ class PlayerMenu {
     else {
       y = 1;
     }
-    if (inventory[y][inventorySlot % 3] === "Health Potion") {
+    if (inventory[y][inventorySlot % 3] === healthPotion) {
       if (character.maxHealth - character.health >= 50) {
-        character.health += 50;
+        character.health += healthPotion.hp;
       }
       else{
         character.health = character.maxHealth;
@@ -417,6 +428,7 @@ function preload() {
   background6 = loadImage("assets/background6.png");
   background7 = loadImage("assets/background7.png");
   background8 = loadImage("assets/background8.png");
+  healthPotion.healthPotionSprite = loadImage("assets/healthPotion.png")
 }
 
 // Setup function runs once at the start of the program
