@@ -27,7 +27,8 @@ class Potion {
   constructor(type) {
     this.potionType = type;
     this.healthPotionSprite = loadImage("assets/healthPotion.png");
-    this.damagePotionSprite = loadImage("assets/damagePotion.png")
+    this.damagePotionSprite = loadImage("assets/damagePotion.png");
+    this.isBeingDragged = false;
     if (this.potionType === "health") {
       this.sprite = this.healthPotionSprite;
       this.hp = 50;
@@ -36,7 +37,6 @@ class Potion {
       this.sprite = this.damagePotionSprite;
       this.hp = -50;
     }
-    this.isBeingDragged = false;
   }
 
   display(location, size, cellNumber) {
@@ -44,7 +44,7 @@ class Potion {
       image(this.sprite, location[cellNumber][0] + size/2, location[cellNumber][1] + size/2, 30, 30);
     }
     else{
-      image(this.sprite, mouseX, mouseY, 30, 30)
+      image(this.sprite, mouseX, mouseY, 30, 30);
     }
   }
 }
@@ -216,7 +216,7 @@ class PlayerMenu {
         character.health += inventory[y][x].hp;
       }
       // Sets that inventory slot to be a blank string or empty after an item has been used
-      inventory[y].splice(x, 1, " ")
+      inventory[y].splice(x, 1, " ");
     }
   }
 
@@ -225,8 +225,8 @@ class PlayerMenu {
     this.tempInventory = [];
     this.tempInventory.push(inventory[startY][startX]);
     this.tempInventory.push(inventory[endY][endX]);
-    inventory[startY].splice(startX, 1, this.tempInventory[1])
-    inventory[endY].splice(endX, 1, this.tempInventory[0])
+    inventory[startY].splice(startX, 1, this.tempInventory[1]);
+    inventory[endY].splice(endX, 1, this.tempInventory[0]);
     console.log(this.tempInventory, "temp inv");
     console.log(inventory, "inv");
     
@@ -348,7 +348,7 @@ class Player {
     for (let i = 0; i < enemies.length; i++) {
 
       if (collideRectCircle(enemies[i].x, enemies[i].y, enemies[i].spriteSize, enemies[i].spriteSize, // enemy location
-                            this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale)) { // attack hitbox
+        this.x + height/this.spriteScale / 2, this.y + height/this.spriteScale / 2, 2.5 * height/this.hitboxScale)) { // attack hitbox
 
         enemies[i].health -= this.playerDamage;
       }
@@ -628,17 +628,10 @@ function keyReleased() {
   }
 }
 
-// Attacks when mouse is pressed.
-function mousePressed() {
-  if (state === "play" && mouseX < width - sideBar.sideBarWidth){
-    character.attack();
-  }
-}
-
 // Function that is called every time you double click. Currently only used to consume potions. I need to redo this when I have the time.
 function doubleClicked() {
   // Iterates once for all inventory slots not including the hotbar/equipped items.
-  for (let i = 0; i < sideBar.cellLocation.length; i++) {
+  for (let i = 0; i < 6; i++) {
     // Checks if the mouse is within that inventory slot and if it is calls the useItem function with that slots location.
     if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
       mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
@@ -649,51 +642,60 @@ function doubleClicked() {
 
 // Function that is called once every time a mouse button is pressed.
 function mousePressed() {
+  if (state === "play" && mouseX < width - sideBar.sideBarWidth){
+    character.attack();
+  }
   // Sanity Check to make sure you arent already dragging an item.
   if (sideBar.isItemBeingDragged !== true) {
-    for (let i = 0; i < sideBar.cellLocation.length; i++) {
+    // Iterates once for every inventory slot
+    for (let i = 0; i < 6; i++) {
       if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
          mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
-           sideBar.isItemBeingDragged = true;
+        sideBar.isItemBeingDragged = true;
 
-          //  check if you are on the top row(slots 1,2,3 or inventory[1]) or the bottom row(slots 4,5,6 or inventory[2]) and drags that item
-           if (i < 3) {
+        //  check if you are on the top row(slots 1,2,3 or inventory[1]) or the bottom row(slots 4,5,6 or inventory[2]) and drags that item
+        if (i < 3) {
 
-             sideBar.draggedItem = inventory[1][i % 3];
-             sideBar.dragStartLocation = [[1],[i % 3]];
-             inventory[1][i % 3].isBeingDragged = true;
-           }
-           else {
-            sideBar.draggedItem = inventory[0][i % 3];
-            sideBar.dragStartLocation = [[2],[i % 3]];
-             inventory[2][i % 3].isBeingDragged = true;
-           }
+          sideBar.draggedItem = inventory[1][i % 3];
+          sideBar.dragStartLocation = [[1],[i % 3]];
+          inventory[1][i % 3].isBeingDragged = true;
+        }
+        else {
+          sideBar.draggedItem = inventory[0][i % 3];
+          sideBar.dragStartLocation = [[2],[i % 3]];
+          inventory[2][i % 3].isBeingDragged = true;
         }
       }
+    }
   }
 }
 
 function mouseReleased() {
-  // If an item was being dragged sets a boolean to false to show that an item isn't being dragged.
 
+  // If an item was being dragged sets a boolean to false to show that an item isn't being dragged.
   if (sideBar.isItemBeingDragged === true) {
     sideBar.isItemBeingDragged = false;
-    for (let i = 0; i < sideBar.cellLocation.length; i++) {
-       if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
+    // Iterates once for every inventory slot
+    for (let i = 0; i < 6; i++) {
+      // Check Location of the mouse
+      if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
          mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
            
-          if (i < 3) {
-           sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i%3, 1)
-          }
-
-          else {
-           sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i % 3, 2)
-          }
-
+        // If you are in slots 0, 1, 2, the top row, get the x of your mouse, i%3, and set the y to 1.
+        if (i < 3) {
+          sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i%3, 1);
         }
-        // sideBar.dragItems()
+
+        // If you are in slots 3, 4, 5, the bottom row, get the x of your mouse, i%3, and set the y to 2.
+        else {
+          sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i % 3, 2);
+        }
 
       }
-      sideBar.draggedItem.isBeingDragged = false;
+      // sideBar.dragItems()
+
+    }
+    // sets the isBeingDragged property of the item to false.
+    sideBar.draggedItem.isBeingDragged = false;
   }
 }
