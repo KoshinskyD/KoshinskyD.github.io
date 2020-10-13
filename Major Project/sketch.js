@@ -1,4 +1,12 @@
-
+// 2D array assignment/game
+// Darren Koshinsky
+// 13/10/2020
+//
+// Extra for Experts:
+// I used 2d arrays in multiple places, Inventory and to name two of them.
+// I think what pushed me above and beyond on this project was the use of
+// splicing to swap the items in your inventory slot and the use of arrays
+// and 2d arrays inside of maps for my items.
 
 // Background managment.
 let background1, background2, background3, background4, background5, background6, background7, background8;
@@ -14,26 +22,28 @@ let areaCounter = 1;
 // ITMES
 // Weapons
 let weapons = new Map();
-weapons.set("Stick", [50, "brown"]);
-weapons.set("Wooden Sword", [150, "red"]);
-weapons.set("Sharp Blade", [180, "silver"]);
-weapons.set("Crystal Sword", [300, "blue"]);
-weapons.set("Ancient Stone Sword", [1200, "grey"]);
-let weaponsKey = ["Stick", "Wooden Sword", "Sharp Blade", "Crystal Sword", "Ancient Stone Sword"];
+weapons.set("Stick", [50, "brown", [10, 10]]);
+weapons.set("Wooden Sword", [150, "red", [10, 10]]);
+weapons.set("Rusty Kitchen Knife", [400, "yellow", [10, 10]]);
+weapons.set("Sharp Blade", [700, "silver", [10, 10]]);
+weapons.set("Crystal Sword", [1500, "blue", [10, 10]]);
+weapons.set("Ancient Stone Sword", [3000, "grey", [10, 10]]);
+let weaponsKey = ["Stick", "Wooden Sword", "Rusty Kitchen Knife", "Sharp Blade", "Crystal Sword", "Ancient Stone Sword"];
 let weaponLevel = 0;
-// Potions
 
+// Potions
 class Potion {
   constructor(type) {
     this.potionType = type;
     this.healthPotionSprite = loadImage("assets/healthPotion.png");
     this.damagePotionSprite = loadImage("assets/damagePotion.png");
     this.isBeingDragged = false;
+    this.spriteSize = 30 * sideBar.sideBarScaler;
     if (this.potionType === "health") {
       this.sprite = this.healthPotionSprite;
       this.hp = 50;
     }
-    else {
+    else if (this.potionType === "damage") {
       this.sprite = this.damagePotionSprite;
       this.hp = -50;
     }
@@ -41,10 +51,10 @@ class Potion {
 
   display(location, size, cellNumber) {
     if (!this.isBeingDragged) {
-      image(this.sprite, location[cellNumber][0] + size/2, location[cellNumber][1] + size/2, 30, 30);
+      image(this.sprite, location[cellNumber][0] + size/2, location[cellNumber][1] + size/2, this.spriteSize, this.spriteSize);
     }
     else{
-      image(this.sprite, mouseX, mouseY, 30, 30);
+      image(this.sprite, mouseX, mouseY, this.spriteSize, this.spriteSize);
     }
   }
 }
@@ -225,14 +235,15 @@ class PlayerMenu {
     this.tempInventory = [];
     this.tempInventory.push(inventory[startY][startX]);
     this.tempInventory.push(inventory[endY][endX]);
+
     inventory[startY].splice(startX, 1, this.tempInventory[1]);
     inventory[endY].splice(endX, 1, this.tempInventory[0]);
+
     console.log(this.tempInventory, "temp inv");
     console.log(inventory, "inv");
     
   }
 }
-
 
 // Player managment
 let sprites = [];
@@ -432,7 +443,7 @@ class Enemy {
     }
   }
 
-  // Returns true and ups the kill counter if you kill an enemy
+  // Returns true and ups the kill counter if an enemy is dead
   isDead() {
     if (this.health <= 0) {
       character.enemyKills++;
@@ -661,7 +672,7 @@ function mousePressed() {
           inventory[1][i % 3].isBeingDragged = true;
         }
         else {
-          sideBar.draggedItem = inventory[0][i % 3];
+          sideBar.draggedItem = inventory[2][i % 3];
           sideBar.dragStartLocation = [[2],[i % 3]];
           inventory[2][i % 3].isBeingDragged = true;
         }
@@ -683,7 +694,7 @@ function mouseReleased() {
            
         // If you are in slots 0, 1, 2, the top row, get the x of your mouse, i%3, and set the y to 1.
         if (i < 3) {
-          sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i%3, 1);
+          sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i % 3, 1);
         }
 
         // If you are in slots 3, 4, 5, the bottom row, get the x of your mouse, i%3, and set the y to 2.
@@ -692,8 +703,6 @@ function mouseReleased() {
         }
 
       }
-      // sideBar.dragItems()
-
     }
     // sets the isBeingDragged property of the item to false.
     sideBar.draggedItem.isBeingDragged = false;

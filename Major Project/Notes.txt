@@ -121,6 +121,12 @@
 // that when you drag an item it switches places. After that I
 // think that I should be done my 2d array project.
 
+// 11:36/12/10/2020
 // Dragging is not working for bottom row. Ask schellenberg
-// about it tomorrow at school. I am at a loss for what is working
-// and it is late so I am going to sleep.
+// about it tomorrow at school. I am at a loss for what is 
+// working and it is late so I am going to sleep.
+
+// 10:07/13/2020
+// I was dumb and had the wrong values being used. Everything 
+// works as intended now. Adding a few weapon and I will look
+// for some sprites for them. 
