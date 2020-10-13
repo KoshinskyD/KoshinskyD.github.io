@@ -112,3 +112,15 @@
 // to add a display that shows up when you hover over the item.
 // This display should show basic info about the item such as 
 // what this item does.
+
+
+// 18:55/12/10/2020
+// Husky from the pubhalls discord server has been helping a lot
+// and has given me examples and pointed me in the right 
+// direction lots. I am currently finishing the inventory so
+// that when you drag an item it switches places. After that I
+// think that I should be done my 2d array project.
+
+// Dragging is not working for bottom row. Ask schellenberg
+// about it tomorrow at school. I am at a loss for what is working
+// and it is late so I am going to sleep.

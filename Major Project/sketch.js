@@ -1,4 +1,5 @@
 
+
 // Background managment.
 let background1, background2, background3, background4, background5, background6, background7, background8;
 let backgrounds = [];
@@ -6,7 +7,7 @@ let backgroundSelection = [];
 let backgroundColour;
 
 // Counters used to change between sprites, screens/gamestates, and locations
-let state = "play";
+let state = "start";
 let areaCounter = 1;
 
 // Inventory
@@ -21,31 +22,49 @@ weapons.set("Ancient Stone Sword", [1200, "grey"]);
 let weaponsKey = ["Stick", "Wooden Sword", "Sharp Blade", "Crystal Sword", "Ancient Stone Sword"];
 let weaponLevel = 0;
 // Potions
-let healthPotionSprite;
-let healthPotion = {
-  hp: 50,
- 
-};
 
-class Items {
-  constructor() {
-    sprite;
-    isBeingDragged = false;
+class Potion {
+  constructor(type) {
+    this.potionType = type;
+    this.healthPotionSprite = loadImage("assets/healthPotion.png");
+    this.damagePotionSprite = loadImage("assets/damagePotion.png")
+    if (this.potionType === "health") {
+      this.sprite = this.healthPotionSprite;
+      this.hp = 50;
+    }
+    else {
+      this.sprite = this.damagePotionSprite;
+      this.hp = -50;
+    }
+    this.isBeingDragged = false;
+  }
+
+  display(location, size, cellNumber) {
+    if (!this.isBeingDragged) {
+      image(this.sprite, location[cellNumber][0] + size/2, location[cellNumber][1] + size/2, 30, 30);
+    }
+    else{
+      image(this.sprite, mouseX, mouseY, 30, 30)
+    }
   }
 }
 
-// inventory[0] is what is equiped inventory[1] and inventory[2] are your inventory
+// inventory[0] is what is equipped inventory[1] and inventory[2] are your inventory
 // inventory[0][0] is weapon, inventory[0][1] is armour, inventory[0][2] is ring 
-let inventory = [[weaponsKey[0], "armour", "ring"], [healthPotion, healthPotion, healthPotion], [healthPotion, healthPotion, healthPotion]];
+let inventory = [[weaponsKey[0], "armour", "ring"], [" ", " ", " "], [" ", " ", " "]];
 let sideBar; 
 class PlayerMenu {
   constructor(sprites) {
+    this.isItemBeingDragged = false;
     this.sideBarScaler = height/789;
     this.sideBarWidth = width/ (5+1/3);
     this.sprite = sprites[0];
     this.spriteY = height/6;
     this.inventoryCellSize = 50 * this.sideBarScaler;
+    this.tempInventory = [];
     this.cellLocation = [];
+    this.dragStartLocation;
+    this.draggedItem;
     this.cellX;
     this.cellY;
   }
@@ -73,13 +92,14 @@ class PlayerMenu {
 
   }
 
-  // health bar
+  // Player Health Bar
   healthBar() {
-    // Health
     rectMode(CORNER);
+    // This draws the outline and the grey behind your health when you loose some HP
     fill(180);
-    //outline
     rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, 200 * this.sideBarScaler, 20 * this.sideBarScaler);
+   
+    // Changes the colour of your health bar depending on how much health you have. It changes every 1/3 of your max health you loose/
     if(character.health > 66) {
       fill("green");
     }
@@ -90,42 +110,52 @@ class PlayerMenu {
       fill("red");
     }
 
+    // If your health drops below 0 changes your state to dead and ends the game. I should move this however I have not yet done so, as it does not need to be in this function and does not make much sense to be here.
     if (character.health < 0 && state === "play") {
       state = "dead";
     }
-    // Health amount
+    // Drawns the box that represents how much health you have left. It takes your current health divided by your max health to get the percentage of health left and 
+    // multiplies it by the total space you have for your health bar
     // eslint-disable-next-line no-extra-parens
-    rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, (character.health * (200 * this.sideBarScaler) ) /100, 20 * this.sideBarScaler);
+    rect(width - this.sideBarWidth + 50 * this.sideBarScaler, 265 * this.sideBarScaler, ((character.health / 100) * (200 * this.sideBarScaler) ), 20 * this.sideBarScaler);
   }
 
   // Inventory
+  // This is currently using a bunch of magic numbers which are based around a screen size of 1578 x 789. I plan to change this when I have the time.
   displayInventory() {
     push();
+
+    // Hotbar/equipped Items.
+    // Makes the black border around the hotbar slots.
     fill("black");
     rect(width - 240 * this.sideBarScaler, 290 * this.sideBarScaler, 190* this.sideBarScaler, 70 * this.sideBarScaler, 15);
-
-    // hotbar/equiped items
+    // Hotbar Slots
     fill("white");
     for(let x = 1; x < inventory[0].length+1; x++) {
-      let equipedCellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * x;
-      let equipedCellY = 300 * this.sideBarScaler;
-      rect(equipedCellX, equipedCellY, this.inventoryCellSize, this.inventoryCellSize, 15);
+      // Location of the cell
+      let equippedCellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * x;
+      let equippedCellY = 300 * this.sideBarScaler;
+      // Drawing the cell
+      rect(equippedCellX, equippedCellY, this.inventoryCellSize, this.inventoryCellSize, 15);
     }
     
-    // box surrounding inventory
+    // Box surrounding the inventory slots.
     fill("black");
     rect(width - 240 * this.sideBarScaler, 375 * this.sideBarScaler, 190 * this.sideBarScaler, 130 * this.sideBarScaler, 15);
 
     // boxes for inventoy slots
     rectMode(CORNER);
     fill("white");
+    // Iterates through the inventory except for the hotbar/equipped items.
     for(let y = 1; y < inventory.length; y++) {
       for(let x = 1; x < inventory[y].length+1; x++) {
-
+        // Sets the cell location.
         let cellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * x;
         let cellY = 325 *this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * y;
+        // Draws the Cell
         rect(cellX, cellY, this.inventoryCellSize, this.inventoryCellSize, 15);
 
+        // Takes the first six slots, in this case all slots, and stores their location in an array.
         if (this.cellLocation.length < 6) {
           this.cellLocation.push([cellX, cellY]);
         }
@@ -133,45 +163,42 @@ class PlayerMenu {
 
     }
     pop();
-    // console.log(this.cellLocation);
   }
 
   // Items
   displayItems(){
-    // weapon 
-    push();
+    // Equipment slots
+    // Weapon 
     if (inventory[0][0] !== " ") {
-      let equipedCellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * 1;
-      let equipedCellY = 300 * this.sideBarScaler;
+      // location of the first slot 
+      let equippedCellX = width - 290*this.sideBarScaler + (this.inventoryCellSize + this.inventoryCellSize/5) * 1;
+      let equippedCellY = 300 * this.sideBarScaler;
+      // Fills the slot with a color based on weapon equipped. This will eventually get replaced by a sprite but I did not have time to make one.
       fill(weapons.get(inventory[0][0])[1]);
-      rect(equipedCellX, equipedCellY, this.inventoryCellSize, this.inventoryCellSize, 15);
+      rect(equippedCellX, equippedCellY, this.inventoryCellSize, this.inventoryCellSize, 15);
     }
+    // Armour - haven't added any yet
+    // Ring - haven't added any yet
 
-    // inventory slots 1-6
+    // Inventory Slots
     let cellCounter = 0;
+    // iterates through your inventory slots and displays what item shoud be there
     for (let y = 1; y < inventory.length; y++) {
       for (let x = 0; x < inventory[y].length; x++) {
-        if (inventory[y][x] === healthPotion && !healthPotion.isBeingDragged) {
-          fill(255, 0, 0);
-          image(healthPotion.healthPotionSprite, this.cellLocation[cellCounter][0] + this.inventoryCellSize/2, this.cellLocation[cellCounter][1] + this.inventoryCellSize/2, 30, 30)
-        }
-        if (inventory[y][x] === "Damage Potion" && !this.isBeingDragged) {
-          fill(0, 255, 0);
-          ellipse(this.cellLocation[cellCounter][0] + this.inventoryCellSize/2, this.cellLocation[cellCounter][1] + this.inventoryCellSize/2, 20);
+        // Checks if the inventory slot is empty
+        if (inventory[y][x] !== " "){
+          // displays item
+          inventory[y][x].display(this.cellLocation, this.inventoryCellSize, cellCounter);
         }
         cellCounter++;
       }
     }
-
-    // Moving items
-    pop();
   }
-
-  // moveItems(startLocation, endLocation) {
-  // }
 
   // Use Items
   useItem(inventorySlot) {
+    // inventory slot is a number from 0-5. 0 being the top left slot and 5 being the bottom right slot.
+    let x = inventorySlot % 3;
     let y;
     if (inventorySlot > 2) {
       y = 2;
@@ -179,23 +206,33 @@ class PlayerMenu {
     else {
       y = 1;
     }
-    if (inventory[y][inventorySlot % 3] === healthPotion) {
-      if (character.maxHealth - character.health >= 50) {
-        character.health += healthPotion.hp;
-      }
-      else{
+    // Sanity check to make sure you do not overheal above your maximum health.
+    if (inventory[y][x] instanceof Potion) {
+      if (character.maxHealth - character.health < 50 && inventory[y][x].potionType === "health") {
         character.health = character.maxHealth;
       }
-      inventory[y][inventorySlot % 3] = " ";
-    }
-
-    if (inventory[y][inventorySlot % 3] === "Damage Potion") {
-      character.health -= 50;
-      inventory[y][inventorySlot % 3] = " ";
+      // applies the potion affect which is +50hp for healing potions and - 50hp for damaging potions. 
+      else{
+        character.health += inventory[y][x].hp;
+      }
+      // Sets that inventory slot to be a blank string or empty after an item has been used
+      inventory[y].splice(x, 1, " ")
     }
   }
-  
+
+  // sideBar.dragItems( 0, 1 , 1, 1)
+  dragItems(startX, startY, endX, endY) {
+    this.tempInventory = [];
+    this.tempInventory.push(inventory[startY][startX]);
+    this.tempInventory.push(inventory[endY][endX]);
+    inventory[startY].splice(startX, 1, this.tempInventory[1])
+    inventory[endY].splice(endX, 1, this.tempInventory[0])
+    console.log(this.tempInventory, "temp inv");
+    console.log(inventory, "inv");
+    
+  }
 }
+
 
 // Player managment
 let sprites = [];
@@ -208,7 +245,7 @@ class Player {
     this.weapon = weapons.get(inventory[0][0]);
     this.playerDamage = 1 * this.weapon[0];
     this.enemyKills = 0;
-    this.equipedWeapon = inventory[0];
+    this.equippedWeapon = inventory[0];
     
     
     //sprite managment
@@ -413,7 +450,7 @@ class Enemy {
   }
 }
 
-// Loads all Images
+// Loads images before startup.
 function preload() {
   knightLeft1 = loadImage("assets/knightLeft1.png");
   knightLeft2 = loadImage("assets/knightLeft2.png");
@@ -428,10 +465,9 @@ function preload() {
   background6 = loadImage("assets/background6.png");
   background7 = loadImage("assets/background7.png");
   background8 = loadImage("assets/background8.png");
-  healthPotion.healthPotionSprite = loadImage("assets/healthPotion.png")
 }
 
-// Setup function runs once at the start of the program
+// Setup function runs once at the start of the program.
 function setup() {
   if (windowHeight*2 > windowWidth) {
     createCanvas(windowWidth, windowWidth/2);
@@ -455,7 +491,7 @@ function setup() {
   console.log(character.playerDamage);
 }
 
-// Set to run 30 times a second
+// Set to run 30 times a second.
 function draw() {
   if (state === "start") {
     startScreen();
@@ -485,7 +521,7 @@ function draw() {
   }
 }
 
-// Makes a start screen
+// Makes a start screen and makes any last preperations needed before entering the play state.
 function startScreen() {
   enemies = [];
   push();
@@ -494,6 +530,17 @@ function startScreen() {
   textSize(35);
   text("click to start", width / 2, height / 2, 200, 100);
   if (mouseIsPressed && state === "start") {
+    for (let i = 1; i < inventory.length; i++) {
+      for (let j = 0; j < inventory[i].length; j++) {
+        if (random(0,2) < 1) {
+          inventory[i].splice(j, 1, new Potion("health"));
+        }
+        else {
+          inventory[i].splice(j, 1, new Potion("damage"));
+        }
+      }
+    }
+    // inventory[1].splice(0, 1, new Potion("health"));
     state = "play";
   }
   pop();
@@ -508,7 +555,7 @@ function deathScreen() {
   text("You Died", width / 2, height / 2, width/4, height/2);
 }
 
-// Selects which backgounds will be shown
+// Selects which backgounds will be shown.
 function selectBackgrounds() {
   backgroundSelection = [];
   // This loops however many times the height fits into the width rounded up. It then adds random numbers used to specify which backgrounds will be displayed and in what order. 
@@ -517,7 +564,7 @@ function selectBackgrounds() {
   }
 }
 
-// Displays the bacground image
+// Displays the bacground image.
 function displayBackground() {
   
   for (let i = 0; i < Math.ceil(width / height); i++) {
@@ -525,7 +572,7 @@ function displayBackground() {
   }
 }
 
-// handles all enemy actions ex.(displaying, moving, attacking, etc.)
+// Handles all enemy actions ex.(displaying, moving, attacking, etc.).
 function handleEnemies() {
   for(let i = enemies.length - 1; i >= 0; i--) {
     enemies[i].display();
@@ -538,7 +585,23 @@ function handleEnemies() {
   }
 }
 
-// Sets movement variables to true based on key presses. The handleMovement function then uses these vairables for movement
+// Spawns new enemies.
+function spawnEnemies(direction) {
+  enemies = [];
+  for (let i = 0; i < areaCounter; i++) {
+    enemies.push(new Enemy(areaCounter, 1, random(width * 0.33, width * 0.66), direction));
+  }
+}
+
+// Calls all sidebar functions.
+function handleSidebar(){
+  sideBar.display();
+  sideBar.healthBar();
+  sideBar.displayInventory();
+  sideBar.displayItems();
+}
+
+// Sets movement variables to true based on key presses. The handleMovement function then uses these vairables for movement.
 function keyPressed() {
   if (key === "a") {
     character.isMovingLeft = true;
@@ -552,7 +615,7 @@ function keyPressed() {
   }
 }
 
-// Sets movement variables to false based on key release. The handleMovement function then uses these vairables for movement
+// Sets movement variables to false based on key release. The handleMovement function then uses these vairables for movement.
 function keyReleased() {
   if (key === "a") {
     character.isMovingLeft = false;
@@ -565,36 +628,72 @@ function keyReleased() {
   }
 }
 
-// Attacks when mouse is pressed
+// Attacks when mouse is pressed.
 function mousePressed() {
   if (state === "play" && mouseX < width - sideBar.sideBarWidth){
     character.attack();
   }
 }
 
+// Function that is called every time you double click. Currently only used to consume potions. I need to redo this when I have the time.
 function doubleClicked() {
+  // Iterates once for all inventory slots not including the hotbar/equipped items.
   for (let i = 0; i < sideBar.cellLocation.length; i++) {
+    // Checks if the mouse is within that inventory slot and if it is calls the useItem function with that slots location.
     if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
       mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
-      console.log(i);
-      console.log(inventory);
       sideBar.useItem(i);
     }
   }
 }
 
-// spawns enemies
-function spawnEnemies(direction) {
-  enemies = [];
-  for (let i = 0; i < areaCounter; i++) {
-    enemies.push(new Enemy(areaCounter, 1, random(width * 0.33, width * 0.66), direction));
+// Function that is called once every time a mouse button is pressed.
+function mousePressed() {
+  // Sanity Check to make sure you arent already dragging an item.
+  if (sideBar.isItemBeingDragged !== true) {
+    for (let i = 0; i < sideBar.cellLocation.length; i++) {
+      if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
+         mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
+           sideBar.isItemBeingDragged = true;
+
+          //  check if you are on the top row(slots 1,2,3 or inventory[1]) or the bottom row(slots 4,5,6 or inventory[2]) and drags that item
+           if (i < 3) {
+
+             sideBar.draggedItem = inventory[1][i % 3];
+             sideBar.dragStartLocation = [[1],[i % 3]];
+             inventory[1][i % 3].isBeingDragged = true;
+           }
+           else {
+            sideBar.draggedItem = inventory[0][i % 3];
+            sideBar.dragStartLocation = [[2],[i % 3]];
+             inventory[2][i % 3].isBeingDragged = true;
+           }
+        }
+      }
   }
 }
 
-// displays sidbar and info on it
-function handleSidebar(){
-  sideBar.display();
-  sideBar.healthBar();
-  sideBar.displayInventory();
-  sideBar.displayItems();
+function mouseReleased() {
+  // If an item was being dragged sets a boolean to false to show that an item isn't being dragged.
+
+  if (sideBar.isItemBeingDragged === true) {
+    sideBar.isItemBeingDragged = false;
+    for (let i = 0; i < sideBar.cellLocation.length; i++) {
+       if (mouseX > sideBar.cellLocation[i][0] && mouseX < sideBar.cellLocation[i][0] + sideBar.inventoryCellSize &&
+         mouseY > sideBar.cellLocation[i][1] && mouseY < sideBar.cellLocation[i][1] + sideBar.inventoryCellSize) {
+           
+          if (i < 3) {
+           sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i%3, 1)
+          }
+
+          else {
+           sideBar.dragItems(sideBar.dragStartLocation[1], sideBar.dragStartLocation[0], i % 3, 2)
+          }
+
+        }
+        // sideBar.dragItems()
+
+      }
+      sideBar.draggedItem.isBeingDragged = false;
+  }
 }
