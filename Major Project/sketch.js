@@ -204,6 +204,31 @@ class PlayerMenu {
       }
     }
   }
+  
+  // displays info about an item when you hover over it
+  displayInfo() {
+    for (let i = 0; i < 6; i++) {
+      // Checks if the mouse is within that inventory slot and if it is calls the useItem function with that slots location.
+      if (mouseX > this.cellLocation[i][0] && mouseX < this.cellLocation[i][0] + this.inventoryCellSize &&
+        mouseY > this.cellLocation[i][1] && mouseY < this.cellLocation[i][1] + this.inventoryCellSize) {
+        console.log("hello" + i);
+        rect(mouseX-150, mouseY-150, 150);
+        push();
+        textAlign(CENTER);
+        fill("black");
+        textSize(20);
+        if (i < 3) {
+          text(inventory[1][i%3].potionType + " potion", mouseX-75, mouseY-80);
+          text("+" +inventory[1][i%3].hp + " HP",  mouseX-75, mouseY - 50);
+        }
+        else {
+          text(inventory[2][i%3].potionType, mouseX-75, mouseY-80);
+          text("+" +inventory[1][i%3].hp + " HP",  mouseX-75, mouseY - 50);
+        }
+        pop();
+      }
+    }
+  }
 
   // Use Items
   useItem(inventorySlot) {
@@ -610,6 +635,7 @@ function handleSidebar(){
   sideBar.healthBar();
   sideBar.displayInventory();
   sideBar.displayItems();
+  sideBar.displayInfo();
 }
 
 // Sets movement variables to true based on key presses. The handleMovement function then uses these vairables for movement.

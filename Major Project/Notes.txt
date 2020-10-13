@@ -130,3 +130,7 @@
 // I was dumb and had the wrong values being used. Everything 
 // works as intended now. Adding a few weapon and I will look
 // for some sprites for them. 
+
+// 11:35/13/2020
+// Working on displaying a text box with item info when you
+// hover over it.
